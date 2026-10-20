@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
-  "bytes": 33723,
-  "sha256": "20f16336618c4771d6f1b23e44229cbf6804d5275d05fa2e77d79bdca0e226ff",
+  "bytes": 33532,
+  "sha256": "6e05bbe2bae252ca7e2b8a72bb93e568f0f1454ff6071bc19564039628e2c537",
   "targets": 15,
-  "blocks": 827
+  "blocks": 811
 }

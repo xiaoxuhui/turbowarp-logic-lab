@@ -46,9 +46,9 @@ c.define('画一条线',['src','dst','pin'],[
   set('sx',add(x(arg('src')),26)),set('sy',y(arg('src'))),set('tx',sub(x(arg('dst')),26)),set('ty',add(y(arg('dst')),arg('pin'))),
   iff(eq(L('Q',arg('src')),1),[cmd('pen_setPenColorToColor',{COLOR:{primitive:[9,'#56d9b0']}})],[cmd('pen_setPenColorToColor',{COLOR:{primitive:[9,'#4c6683']}})]),
   cmd('pen_penUp'),pos(V('sx'),V('sy')),cmd('pen_penDown'),
-  iff(gt(V('tx'),V('sx')),[pos(div(add(V('sx'),V('tx')),2),V('sy')),pos(div(add(V('sx'),V('tx')),2),V('ty'))],[
-    pos(add(V('sx'),3),V('sy')),pos(add(V('sx'),3),add(V('sy'),28)),pos(sub(V('tx'),3),add(V('sy'),28)),pos(sub(V('tx'),3),V('ty'))
-  ]),pos(V('tx'),V('ty')),cmd('pen_penUp')
+  pos(add(V('sx'),3),V('sy')),pos(add(V('sx'),3),sub(V('sy'),28)),
+  pos(sub(V('tx'),3),sub(V('sy'),28)),pos(sub(V('tx'),3),V('ty')),
+  pos(V('tx'),V('ty')),cmd('pen_penUp')
 ],[2000,20]);
 c.define('画全部线',[],[
   cmd('pen_clear'),cmd('pen_penUp'),cmd('pen_setPenSizeTo',{SIZE:2}),set('k',1),repeat(24,[
@@ -140,8 +140,8 @@ cell.hat('event_whenthisspriteclicked',{},[
   iff(and(gt(V('格号'),0),eq(V('忙碌'),0)),[set('忙碌',1),set('点击',V('格号')),set('点击Y',expr('sensing_mousey')),broadcast('格子点击')])
 ],[400,400]);
 // Empty is costume 1, then kind*2 + bit for kinds 1..6.
-const cells=sprite('网格元件',cell.blocks,[costume('空格',cellArt(0,0),27,26),...Array.from({length:6},(_,i)=>[0,1].map(q=>costume(names[i+1]+q,cellArt(i+1,q),27,26))).flat()],0,0,3,false,{[variableId('格号')]:['格号',0]});
-export const buttonDefs=[...names.slice(1).map((label,i)=>({label,action:i+1,x:-202,y:90-i*38,w:66,h:32})),...['连线','移动','删除','撤销','示例','清空'].map((label,i)=>({label,action:i+7,x:-130+i*62,y:124,w:58,h:27}))];
+const cells=sprite('网格元件',cell.blocks,[costume('空格',cellArt(0,0),27,23),...Array.from({length:6},(_,i)=>[0,1].map(q=>costume(names[i+1]+q,cellArt(i+1,q),27,23))).flat()],0,0,3,false,{[variableId('格号')]:['格号',0]});
+export const buttonDefs=[...names.slice(1).map((label,i)=>({label,action:i+1,x:-202,y:90-i*38,w:66,h:32})),...['连线','移动','删除','撤销','示例','清空'].map((label,i)=>({label,action:i+7,x:-130+i*62,y:127,w:58,h:26}))];
 const buttons=buttonDefs.map(({label,action,x,y,w,h},i)=>{
   const b=new ScratchBuilder('button'+i);
   b.hat('event_whenthisspriteclicked',{},[iff(eq(V('忙碌'),0),[set('忙碌',1),set('动作',action),broadcast('工具点击')])],[20,20]);
