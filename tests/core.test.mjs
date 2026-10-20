@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {Circuit,demo,xy,evaluate} from '../src/core.mjs';
+test('NAND four rows',()=>{for(const a of [0,1])for(const b of [0,1]){const c=demo();if(a)c.toggle(7);if(b)c.toggle(19);assert.equal(c.Q[11],1-(a&b));}});
+test('NOT AND OR exhaustive truth tables',()=>{for(const t of [3,4,5])for(const a of [0,1])for(const b of [0,1]){const c=new Circuit();c.place(1,1);c.place(2,1);c.place(3,t);c.connect(1,3);if(t!==3)c.connect(2,3,'B');if(a)c.toggle(1);if(b)c.toggle(2);assert.equal(c.Q[2],t===3?1-a:t===4?a&b:a|b);}});
+test('fanout replacement and dangling zero',()=>{const c=demo();c.place(24,6);c.connect(7,24);c.toggle(7);assert.equal(c.Q[23],1);c.connect(19,24);assert.equal(c.Q[23],0);c.remove(19);assert.equal(c.Q[11],1);assert.equal(c.A[23],0);});
+test('cycle and invalid connections are transactional',()=>{const c=demo();c.place(15,3);c.connect(10,15);const before=c.data();for(const args of [[15,10],[10,10],[12,15],[1,15],[10,7]])assert.equal(c.connect(...args),false);assert.deepEqual(c.data(),before);assert.throws(()=>evaluate([3,3,...Array(22).fill(0)],[2,1,...Array(22).fill(0)],Array(24).fill(0),Array(24).fill(0)),/反馈/);});
+test('move and delete rewrite references, undo once',()=>{const c=demo();c.toggle(7);assert(c.move(10,16));assert.equal(c.A[11],16);assert.equal(c.A[15],7);assert.equal(c.B[15],19);assert(!c.move(16,7));const before=c.data();c.remove(16);assert.equal(c.A[11],0);assert(c.undo());assert.deepEqual(c.data(),before);assert(!c.undo());});
+test('24 cells and reversed long chain',()=>{const c=new Circuit();c.place(24,1);for(let i=23;i>=1;i--){c.place(i,3);c.connect(i+1,i);}c.toggle(24);for(let i=1;i<=24;i++)assert.equal(c.Q[i-1],(24-i)%2?0:1);assert(!c.place(25,1));assert(!c.place(1,1));});
+test('grid coordinates bounded and unique',()=>{const a=Array.from({length:24},(_,i)=>xy(i+1));assert.equal(new Set(a.map(JSON.stringify)).size,24);assert(a.every(p=>Math.abs(p.x)<=180&&Math.abs(p.y)<=90));});
