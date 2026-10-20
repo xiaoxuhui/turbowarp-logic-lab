@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "method": "Codex Desktop native Playwright MCP",
+  "checks": [
+    "New independent editor tab",
+    "vm.loadProject original SB3",
+    "Native browser_click green flag",
+    "24 clones, idle state, NAND 0/0 yields 1, no COMPILE_ERROR",
+    "Native browser_click full-stage control"
+  ],
+  "stateEvidence": "### Result\n{\n  \"status\": \"PASS\",\n  \"T\": [\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    1,\n    0,\n    0,\n    2,\n    0,\n    6,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    1,\n    0,\n    0,\n    0,\n    0,\n    0\n  ],\n  \"A\": [\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    7,\n    0,\n    10,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0\n  ],\n  \"B\": [\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    19,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0\n  ],\n  \"Q\": [\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    1,\n    0,\n    1,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0\n  ],\n  \"clones\": 24,\n  \"busy\": 0,\n  \"compileErrors\": []\n}\n"
+}
