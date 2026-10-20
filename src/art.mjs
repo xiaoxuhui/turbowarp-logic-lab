@@ -1,0 +1,10 @@
+export const svg=(body,w=480,h=360)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><style>text{font-family:'Microsoft YaHei','Noto Sans SC',sans-serif}</style>${body}</svg>`;
+const text=(x,y,s,size=12,color='#dce8f4',anchor='start')=>`<text x="${x}" y="${y}" font-size="${size}" fill="${color}" text-anchor="${anchor}">${s}</text>`;
+export const backdrop=svg(`<rect width="480" height="360" fill="#101c2e"/><rect x="8" y="8" width="464" height="32" rx="9" fill="#1b2e46"/>${text(20,30,'逻辑小实验室',18)}${text(456,29,'BIT LAB · v0.1.0',11,'#88a9c6','end')}<rect x="9" y="72" width="69" height="232" rx="9" fill="#192b40"/><rect x="84" y="72" width="372" height="232" rx="10" fill="#142438"/>${Array.from({length:24},(_,i)=>{const x=120+i%6*60,y=90+Math.floor(i/6)*60;return `<circle cx="${x}" cy="${y}" r="1.5" fill="#36516c"/>`;}).join('')}<rect x="8" y="310" width="464" height="27" rx="7" fill="#20364c"/>${text(15,350,'先选工具再点格子 · 连线：来源 → 目标（上 A / 下 B）',10,'#90adc5')}`);
+export const names=['','输入','NAND','NOT','AND','OR','输出'];
+export function cellArt(t,q){
+  if(!t)return svg('<rect x="1" y="1" width="52" height="50" rx="8" fill="#182b40" stroke="#35516c" stroke-dasharray="3 4"/><path d="M22 26H32M27 21V31" stroke="#45617d" stroke-width="1.5"/>',54,52);
+  const color=q?'#5be0bc':'#5c7694',bg=q?'#1e504e':'#23364f';
+  return svg(`<rect x="1" y="1" width="52" height="50" rx="8" fill="${bg}" stroke="${color}" stroke-width="1.5"/>${text(27,16,names[t],t===2?10:11,'#c7d9e9','middle')}${text(27,41,String(q),24,q?'#a9ffe0':'#a4b6cd','middle')}${t!==1?`<circle cx="3" cy="18" r="3" fill="#e9b768"/>${text(8,22,'A',7,'#e9b768')}`:''}${[2,4,5].includes(t)?`<circle cx="3" cy="34" r="3" fill="#dc91cd"/>${text(8,38,'B',7,'#dc91cd')}`:''}${t!==6?`<circle cx="51" cy="26" r="3" fill="${color}"/>`:''}`,54,52);
+}
+export const buttonArt=(label,active=false,w=58,h=27)=>svg(`<rect x="1" y="1" width="${w-2}" height="${h-2}" rx="7" fill="${active?'#33796f':'#263e57'}" stroke="${active?'#7cf1ce':'#3f5b75'}"/>${text(w/2,h/2+4,label,12,active?'#e7fff4':'#c7d9e9','middle')}`,w,h);
