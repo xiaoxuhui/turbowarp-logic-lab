@@ -1,0 +1,27 @@
+{
+  "checks": [
+    {
+      "name": "existing native NAND circuit four truth rows match independent evaluator offline"
+    },
+    {
+      "name": "real mouse placement and upper/lower port wiring"
+    },
+    {
+      "name": "reload preserves moved circuit, native redraw and undo snapshot"
+    },
+    {
+      "name": "native delete rewrites connections and undo restores circuit"
+    },
+    {
+      "name": "feedback connection rejected without changing circuit"
+    },
+    {
+      "name": "corrupt circuit save protected from automatic overwrite"
+    },
+    {
+      "name": "real mobile touch toggles NAND inputs and places NOT gate"
+    }
+  ],
+  "errors": [],
+  "externalRequests": []
+}
