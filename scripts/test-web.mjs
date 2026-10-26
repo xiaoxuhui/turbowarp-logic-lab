@@ -1,0 +1,55 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import http from 'node:http';
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
+import {evaluate,xy} from '../src/core.mjs';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const bridgeRequire=createRequire(new URL('../../turbowarp-codex-bridge/package.json',import.meta.url));
+const {chromium}=createRequire(bridgeRequire.resolve('@playwright/mcp/package.json'))('playwright');
+const config=JSON.parse(await fs.readFile(new URL('../../turbowarp-codex-bridge/config/playwright.json',import.meta.url),'utf8'));
+const html=await fs.readFile(path.join(root,'web-dist/index.html'));
+const server=http.createServer((req,res)=>{if(req.url==='/'||req.url==='/index.html'){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(html);}else{res.statusCode=404;res.end();}});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const origin=`http://127.0.0.1:${server.address().port}`;
+const report={checks:[],errors:[],externalRequests:[]};let browser;
+const offline=async page=>{page.on('pageerror',e=>report.errors.push(String(e)));await page.route('**/*',route=>{const u=route.request().url();if(u.startsWith(origin)||u.startsWith('data:')||u.startsWith('blob:'))return route.continue();report.externalRequests.push(u);return route.abort();});};
+try{
+ browser=await chromium.launch({...config.browser.launchOptions,headless:true});
+ const page=await browser.newPage({viewport:{width:1280,height:900},locale:'zh-CN'});await offline(page);await page.goto(origin);await page.waitForFunction(()=>window.hall?.ready===true);
+ const state=async()=>{const data=await page.evaluate(()=>{const v=vm.runtime.getTargetForStage().variables;return Object.fromEntries(['T','A','B','Q'].map(k=>[k,v['l_'+k].value.map(Number)]));});assert.deepEqual(data.Q,evaluate(data.T,data.A,data.B,data.Q));return data;};
+ const point=async(x,y)=>{const r=await page.locator('canvas').first().boundingBox();await page.mouse.click(r.x+(x+240)/480*r.width,r.y+(180-y)/360*r.height);await page.waitForTimeout(90);await page.waitForFunction(()=>vm.runtime.getTargetForStage().variables.v_忙碌.value===0);};
+ const tool=async label=>{const p=await page.evaluate(n=>{const t=vm.runtime.targets.find(t=>t.getName()===n+'工具');return{x:t.x,y:t.y};},label);await point(p.x,p.y);};
+ const cell=async(id,pin='A')=>{const p=xy(id);await point(p.x,p.y+(pin==='B'?-10:10));};
+ const wire=async(src,dst,pin='A')=>{await tool('连线');await cell(src);await cell(dst,pin);};
+ let s=await state();assert.equal(s.T[9],2);assert.equal(s.T[11],6);
+ for(const [a,b] of [[0,0],[1,0],[1,1],[0,1]]){s=await state();if(s.Q[6]!==a)await cell(7);if(s.Q[18]!==b)await cell(19);s=await state();assert.equal(s.Q[11],Number(!(a&&b)));}
+ report.checks.push({name:'existing native NAND circuit four truth rows match independent evaluator offline'});
+ await tool('清空');await tool('清空');assert((await state()).T.every(x=>x===0));
+ for(const [id,label] of [[7,'输入'],[19,'输入'],[10,'NAND'],[12,'输出']]){await tool(label);await cell(id);}
+ await wire(7,10);await wire(19,10,'B');await wire(10,12);s=await state();assert.equal(s.A[9],7);assert.equal(s.B[9],19);assert.equal(s.A[11],10);
+ report.checks.push({name:'real mouse placement and upper/lower port wiring'});
+ await tool('移动');await cell(10);await cell(16);const moved=await state();assert.equal(moved.T[15],2);assert.equal(moved.A[11],16);
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem(hall.storageKey))?.variables.l_T[15]===2);
+ await page.reload();await page.waitForFunction(()=>window.hall?.ready===true);assert.deepEqual(await state(),moved);
+ await tool('撤销');s=await state();assert.equal(s.T[9],2);assert.equal(s.A[11],10);
+ report.checks.push({name:'reload preserves moved circuit, native redraw and undo snapshot'});
+ await tool('删除');await cell(10);s=await state();assert.equal(s.T[9],0);assert.equal(s.A[11],0);await tool('撤销');assert.equal((await state()).T[9],2);
+ report.checks.push({name:'native delete rewrites connections and undo restores circuit'});
+ await tool('清空');await tool('清空');for(const id of [1,2]){await tool('NOT');await cell(id);}await wire(1,2);const valid=await state();await wire(2,1);assert.deepEqual(await state(),valid);
+ report.checks.push({name:'feedback connection rejected without changing circuit'});
+ await tool('示例');await page.waitForFunction(()=>hall.save());await page.screenshot({path:path.join(root,'evidence/web-desktop.png')});
+ const saved=await page.evaluate(()=>localStorage.getItem(hall.storageKey));
+ await page.evaluate(()=>localStorage.setItem(hall.storageKey,'{broken'));await page.reload();await page.waitForFunction(()=>window.hall?.ready===true);
+ assert.equal(await page.evaluate(()=>localStorage.getItem(hall.storageKey)),'{broken');assert.match(await page.locator('#hall-banner').innerText(),/原数据已保留/);assert.equal(await page.evaluate(()=>hall.save()),false);
+ await page.evaluate(raw=>localStorage.setItem(hall.storageKey,raw),saved);await page.reload();await page.waitForFunction(()=>window.hall?.ready===true);
+ report.checks.push({name:'corrupt circuit save protected from automatic overwrite'});
+ const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,locale:'zh-CN'});const mobile=await context.newPage();await offline(mobile);await mobile.goto(origin);await mobile.waitForFunction(()=>window.hall?.ready===true);
+ const tap=async(x,y)=>{const r=await mobile.locator('canvas').first().boundingBox();await mobile.touchscreen.tap(r.x+(x+240)/480*r.width,r.y+(180-y)/360*r.height);await mobile.waitForTimeout(90);};
+ for(const id of [7,19]){const p=xy(id);await tap(p.x,p.y+10);}assert.equal(await mobile.evaluate(()=>vm.runtime.getTargetForStage().variables.l_Q.value[11]),0);
+ const p=await mobile.evaluate(()=>{const t=vm.runtime.targets.find(t=>t.getName()==='NOT工具');return{x:t.x,y:t.y};});await tap(p.x,p.y);const position=xy(1);await tap(position.x,position.y+10);assert.equal(await mobile.evaluate(()=>vm.runtime.getTargetForStage().variables.l_T.value[0]),3);
+ await mobile.screenshot({path:path.join(root,'evidence/web-mobile.png')});await context.close();
+ report.checks.push({name:'real mobile touch toggles NAND inputs and places NOT gate'});
+ assert.deepEqual(report.errors,[]);assert.deepEqual(report.externalRequests,[]);console.log(JSON.stringify(report,null,2));
+}finally{if(browser)await browser.close();await new Promise(r=>server.close(r));await fs.writeFile(path.join(root,'evidence/web-test.json'),JSON.stringify(report,null,2)+'\n');}

@@ -1,0 +1,7 @@
+{
+  "id": "turbowarp-logic-lab",
+  "title": "逻辑小实验室",
+  "version": "0.1.0",
+  "kind": "logic",
+  "project": "dist/logic-lab.sb3"
+}
