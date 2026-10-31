@@ -49,4 +49,4 @@ node scripts/test-editor.mjs
 
 `node scripts/build-web.mjs` 只生成 web-dist，不覆盖原 SB3；`node scripts/test-web.mjs` 在独立浏览器阻断外网进行真实鼠标、触摸、恢复及错误态验证。测试复用 Bridge 的浏览器工具链，不修改 Bridge 的配置。
 
-大厅接入身份见 game-hub.integration.json，当前资源协议 2、桥协议 1。源仓库保持私有；大厅仅分发 web-dist 内有明确许可的运行资源，不包含开发日志或机器配置。不制作独立 APK。大厅登记与发行进展见 doc/大厅网页接入实施计划.md。
+源码、作品和离线网页已公开在 [GitHub 仓库](https://github.com/xiaoxuhui/turbowarp-logic-lab)。大厅接入身份见 game-hub.integration.json，当前资源协议 2、桥协议 1。自有代码采用 MIT 许可；打包运行时保留各自的第三方许可声明。大厅仅分发 web-dist 中列明的运行资源，不包含开发日志或机器配置。不制作独立 APK。大厅登记与发行进展见 doc/大厅网页接入实施计划.md。`package.json` 中的 `private: true` 只用于阻止误发布到 npm，不影响 GitHub 仓库的公开可见性。
